@@ -16,17 +16,43 @@
     }
 
     #renderCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
       font-size: 0;
+      width: 100%;
+    }
+
+    #grid {
+      display: grid;
+      grid-gap: 1vw;
+      grid-template-columns: [col1-start] 30vw [col2-start] 70vw;
+    }
+    #info {
+      border: 1px solid red;
+    }
+    #debugCamera {
+      border: 1px solid pink;
+    }
+    #debug {
+      border: 1px solid black;
     }
   </style>
   <body>
     <h1>webpack starter</h1>
-    <p>
-      ✨ A lightweight foundation for your next webpack based frontend project.
-    </p>
-    <canvas id="renderCanvas" touch-action="none"></canvas>
+    <div>
+      <p>
+        ✨ A lightweight foundation for your next webpack based frontend
+        project.
+      </p>
+    </div>
+    <div id="grid">
+      <div id="info">
+        Here we will have the information about the selected item
+        <p id="infoParagraph1"></p>
+        <p id="debugCamera"></p>
+        <p id="debug"></p>
+      </div>
+      <div id="canvasContainer">
+        <canvas id="renderCanvas" touch-action="none"></canvas>
+      </div>
+    </div>
   </body>
 </html>
