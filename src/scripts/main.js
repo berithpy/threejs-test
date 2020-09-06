@@ -17,29 +17,32 @@ import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 
-import { EasingFunction, CubicEase } from "@babylonjs/core/Animations/easing";
-import { Animation } from "@babylonjs/core/Animations";
 // Required side effects to populate the Create methods on the mesh class. Without this, the bundle would be smaller but the createXXX methods from mesh would not be accessible.
 import "@babylonjs/core/Meshes/meshBuilder";
 import "@babylonjs/loaders/glTF";
 import "@babylonjs/core";
-
+import ElementManager from "./managers/elementManager";
 import "../styles/index.scss";
+import CameraManager from "./managers/cameraManager";
 
 if (process.env.NODE_ENV === "development") {
   require("../index.html");
 }
 
-console.log("webpack starterkit");
-const infoElement = document.getElementById("infoParagraph1");
-const debugElement = document.getElementById("debug");
-const cameraPositionDebugElement = document.getElementById("debugCamera");
-const testButton = document.getElementById("testButton");
+const elements = new ElementManager([
+  "infoParagraph1",
+  "debug",
+  "debugCamera",
+  "testButton",
+]);
+
+const infoElement = elements.get("infoParagraph1");
+const debugElement = elements.get("debug");
+const cameraPositionDebugElement = elements.get("debugCamera");
+const testButton = elements.get("testButton");
+
 // Get the canvas element from the DOM.
 const canvas = document.getElementById("renderCanvas");
-
-const ANIMATIONSPEED = 45;
-const ANIMATIONFRAMES = 200;
 
 // Associate a Babylon Engine to it.
 const engine = new Engine(canvas, true, { stencil: true });
@@ -75,136 +78,49 @@ var camera = new ArcRotateCamera(
   new Vector3(0, 0, 0),
   scene
 );
-
 // This targets the camera to scene origin
 camera.setTarget(new Vector3(0, 0, 0));
 // This attaches the camera to the canvas
 camera.attachControl(canvas, true);
 // camera.inputs.addGamepad();
 
-const animEnded = function (anim) {
-  console.log("animation ended", anim);
-  camera.attachControl(canvas, true);
-  for (anim of scene.animations) {
-    anim.stop();
-  }
-};
+//Should the camera manager create the camera?
+const cameraManager = new CameraManager(scene, camera);
 
-const targAnimEnded = function (test) {
-  console.log("targAnimEnded:", test);
-};
-
-const camPosAnimEnded = function (test) {
-  console.log("camPosAnimEnded:", test);
-};
-
-const animateCameraTargetToPosition = function (
-  cam,
-  speed,
-  frameCount,
-  newPos
-) {
-  let ease = new CubicEase();
-  ease.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
-
-  let aable1 = Animation.CreateAndStartAnimation(
-    "targetAnimation",
-    cam,
-    "target",
-    speed,
-    frameCount,
-    cam.target,
-    newPos,
-    0,
-    ease,
-    targAnimEnded
-  );
-  aable1.disposeOnEnd = true;
-};
-
-const animateCameraToPosition = function (cam, speed, frameCount, position) {
-  let ease = new CubicEase();
-  ease.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
-  let aable2 = Animation.CreateAndStartAnimation(
-    "objectAnimation",
-    cam,
-    "position",
-    speed,
-    frameCount,
-    cam.position,
-    position,
-    0,
-    ease,
-    camPosAnimEnded
-  );
-  aable2.disposeOnEnd = true;
-};
-
-SceneLoader.Append("./public/assets/models/", "office.glb", scene, function (
-  scene
-) {});
+SceneLoader.Append(
+  "./public/assets/models/",
+  "office.glb",
+  scene,
+  function () {}
+);
 
 // Do we need a function that does this?
 // Should we add every param?
 // Also, do we need a queue for this?
 // Should we have a config with known poses(both position and target) based on clicked item?
-const animateCamera = function (cameraPosition, cameraTarget) {
-  animateCameraToPosition(
-    camera,
-    ANIMATIONSPEED,
-    ANIMATIONFRAMES,
-    cameraPosition
-  );
-  animateCameraTargetToPosition(
-    camera,
-    ANIMATIONSPEED,
-    ANIMATIONFRAMES,
-    cameraTarget
-  );
-};
 
 const animateToHome = function () {
-  animateCameraToPosition(
-    camera,
-    ANIMATIONSPEED,
-    ANIMATIONFRAMES,
-    defaultCameraPosition
-  );
-  animateCameraTargetToPosition(
-    camera,
-    ANIMATIONSPEED,
-    ANIMATIONFRAMES,
-    new Vector3(0, 0, 0)
-  );
+  cameraManager.animateCamera(defaultCameraPosition, new Vector3(0, 0, 0));
 };
 
 const animateToMonitor = function () {
+  console.log("asd");
   const cameraPosition = new Vector3(
     -0.6273243739201747,
     1.5740085977648293,
     0.5156315816511976
-  );
-  animateCameraToPosition(
-    camera,
-    ANIMATIONSPEED,
-    ANIMATIONFRAMES,
-    cameraPosition
   );
   const cameraTarget = new Vector3(
     1.1691228052256966,
     0.3696672344653039,
     -0.37055848692617843
   );
-  animateCameraTargetToPosition(
-    camera,
-    ANIMATIONSPEED * 2,
-    ANIMATIONFRAMES / 2,
-    cameraTarget
-  );
+  cameraManager.animateCamera(cameraPosition, cameraTarget);
 };
-testButton.onclick = animateToHome;
+testButton.setOnClick(animateToHome);
+
 var highlightLayer = new HighlightLayer("highlightLayer", scene);
-// This needs a LOT of refactor
+// This will be done in the targetableManager
 const whitelist = ["MonitorScreen_primitive1", "MonitorScreen_primitive0"];
 scene.onPointerObservable.add((pointerInfo) => {
   switch (pointerInfo.type) {
@@ -236,7 +152,7 @@ scene.onPointerObservable.add((pointerInfo) => {
         // highlighted
         // checks if the mesh is already in the highlight layer, if it is
         // it removes the highlight otherwise, it sets the highlight
-        infoElement.innerText = mesh.name;
+        infoElement.setContent(pickedMesh.name);
         if (pickedMesh.parent && pickedMesh.parent.metadata != null) {
           pickedMesh.parent.getChildMeshes().forEach((mesh) => {
             if (highlightLayer.hasMesh(mesh)) {
