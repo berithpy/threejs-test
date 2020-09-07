@@ -19,6 +19,9 @@ body {
   grid-gap: 1vw;
   grid-template-columns: [col1-start] 30vw [col2-start] 70vw;
 }
+#infoGrid {
+  border: 1px solid red;
+}
 #info {
   border: 1px solid red;
 }
@@ -28,11 +31,12 @@ body {
 #debug {
   border: 1px solid black;
 }
+
+// https://codepen.io/lbebber/pen/XJRdrV Source!
 $ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
 $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
 $screen-background: #121010;
 
-// https://codepen.io/lbebber/pen/XJRdrV Source!
 #switch {
   display: none;
 }
@@ -84,7 +88,7 @@ $screen-background: #121010;
 }
 .container {
   background: $screen-background;
-  margin-top: 10px;
+  // margin-top: 10px;
   position: relative;
   overflow: hidden;
 
@@ -126,7 +130,7 @@ $screen-background: #121010;
     pointer-events: none;
   }
 }
-#switch:checked ~ .container::after {
+#switch:checked ~ #grid > #tvContainer > .container::after {
   animation: flicker 0.15s infinite;
 }
 
@@ -191,11 +195,11 @@ $screen-background: #121010;
   height: 100%;
   border: none;
 }
-#switch ~ .container > .screen {
+#switch ~ #grid > #tvContainer > .container > .screen {
   animation: turn-off 0.55s $ease-out-quint;
   animation-fill-mode: forwards;
 }
-#switch:checked ~ .container > .screen {
+#switch:checked ~ #grid > #tvContainer > .container > .screen {
   animation: turn-on 4s linear;
   animation-fill-mode: forwards;
 }
@@ -219,12 +223,12 @@ $screen-background: #121010;
   position: absolute;
   top: 20px;
   left: 20px;
-  font-size: 60px;
-  //text-shadow:2px 2px black,-2px -2px black, -2px 2px black, 2px -2px black;
+  font-size: 35px;
+  // text-shadow: 2px 2px black, -2px -2px black, -2px 2px black, 2px -2px black;
   visibility: hidden;
   pointer-events: none;
 }
-#switch:checked ~ .container .overlay {
+#switch:checked ~ #grid > #tvContainer > .container .overlay {
   animation: overlay-anim 5s linear;
   animation-fill-mode: forwards;
 }

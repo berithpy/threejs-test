@@ -1,32 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>webpack starterkit</title>
-  </head>
-  <style>
-    
-  </style>
-  <body>
-    <h1>webpack starter</h1>
-    <div>
-      <p>
-        ✨ A lightweight foundation for your next webpack based frontend
-        project.
-      </p>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>webpack starterkit</title>
+</head>
+<style></style>
+
+<body>
+  <h1>webpack starter</h1>
+  <div>
+    <p>
+      ✨ A lightweight foundation for your next webpack based frontend
+      project.
+    </p>
+  </div>
+  <input type="checkbox" id="switch">
+  <label for="switch" class="switch-label">Turn </label>
+  <div id="grid">
+    <div id="infoGrid">
+      Here we will have the information about the selected item
+      <p id="info"></p>
+      <p id="infoParagraph1"></p>
+      <p id="debugCamera"></p>
+      <p id="debug"></p>
+      <button id="testButton">Test</button>
     </div>
-    <div id="grid">
-      <div id="info">
-        Here we will have the information about the selected item
-        <p id="infoParagraph1"></p>
-        <p id="debugCamera"></p>
-        <p id="debug"></p>
-        <button id="testButton">Test</button>
-      </div>
+    <div id="tvContainer">
       <div id="canvasContainer" class="container">
-        <canvas id="renderCanvas" touch-action="none"></canvas>
+        <canvas id="renderCanvas" touch-action="none" class="screen"></canvas>
+        <div class="overlay">OFFICE</div>
       </div>
     </div>
-  </body>
+  </div>
+  </div>
+</body>
+
 </html>

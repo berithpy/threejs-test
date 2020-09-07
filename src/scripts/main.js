@@ -120,7 +120,8 @@ const animateToMonitor = function () {
 testButton.setOnClick(animateToHome);
 
 var highlightLayer = new HighlightLayer("highlightLayer", scene);
-// This will be done in the targetableManager
+
+// All this will be done in the targetableManager
 const whitelist = ["MonitorScreen_primitive1", "MonitorScreen_primitive0"];
 scene.onPointerObservable.add((pointerInfo) => {
   switch (pointerInfo.type) {
@@ -139,12 +140,6 @@ scene.onPointerObservable.add((pointerInfo) => {
         } objectCamera position ${
           (objectCamera.x, objectCamera.y, objectCamera.z)
         }`;
-        /**
-         *  Alpha:2.7085872007963125
-         *  beta:1.0731817239502128
-         *  radius:1.4379025790837194
-         *  GP:{X: -0.6273243739201747 Y:1.5740085977648293 Z:0.5156315816511976}
-         */
 
         // Most meshes have parents
         // Having metadata it means that the parent is a TransformNode
@@ -181,19 +176,9 @@ scene.onPointerObservable.add((pointerInfo) => {
   }
 });
 
-// Render every frame
-let reverse = false;
 engine.runRenderLoop(() => {
-  // if (pilot.position.x > 1 && reverse === false) {
-  //   reverse = true;
-  // } else if (pilot.position.x < -1) {
-  //   reverse = false;
-  // }
-  // pilot.position.x = reverse
-  //   ? pilot.position.x - 0.05
-  //   : pilot.position.x + 0.05;
-  // pilot.rotation.x = pilot.rotation.x + 0.1;
-  // pilot.rotation.y = pilot.rotation.y + 0.1;
-  // pilot.rotation.z = pilot.rotation.z + 0.1;
+  // We should probably add the main.update here,
+  // or any update for any class we want to call on every frame,
+  // Maybe a targetable update?
   scene.render();
 });

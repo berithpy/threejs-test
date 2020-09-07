@@ -1,6 +1,6 @@
 export default class TargetableManager {
-  constructor(name, children) {
-    this.names = name;
+  constructor(meshNames, children, scene) {
+    this.meshNames = meshNames;
     this.children = children;
   }
 }
