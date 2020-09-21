@@ -24,6 +24,8 @@ import "@babylonjs/core";
 import ElementManager from "./managers/elementManager";
 import "../styles/index.scss";
 import CameraManager from "./managers/cameraManager";
+import TargetManager from "./managers/targetManager";
+import POV from "./objects/pov";
 
 if (process.env.NODE_ENV === "development") {
   require("../index.html");
@@ -65,11 +67,6 @@ light.intensity = 1;
  * radius:5.226759349093842
  * GP:{X: -3.9250482511266886 Y:2.332834600993618 Z:2.4499805763462303}
  */
-const defaultCameraPosition = new Vector3(
-  -3.9250482511266886,
-  2.332834600993618,
-  2.4499805763462303
-);
 var camera = new ArcRotateCamera(
   "camera1",
   8.862160309140117,
@@ -82,11 +79,33 @@ var camera = new ArcRotateCamera(
 camera.setTarget(new Vector3(0, 0, 0));
 // This attaches the camera to the canvas
 camera.attachControl(canvas, true);
-// camera.inputs.addGamepad();
+
+const highlightLayer = new HighlightLayer("highlightLayer", scene);
 
 //Should the camera manager create the camera?
 const cameraManager = new CameraManager(scene, camera);
 
+const homePOV = new POV(
+  new Vector3(-3.9250482511266886, 2.332834600993618, 2.4499805763462303),
+  new Vector3(0, 0, 0)
+);
+
+const monitorPOV = new POV(
+  new Vector3(-0.6273243739201747, 1.5740085977648293, 0.5156315816511976),
+  new Vector3(1.1691228052256966, 0.3696672344653039, -0.37055848692617843)
+);
+
+const targetManager = new TargetManager(
+  scene,
+  cameraManager,
+  homePOV,
+  highlightLayer
+);
+
+targetManager.addTarget("MonitorScreen_primitive1", monitorPOV);
+targetManager.addTarget("MonitorScreen_primitive0", monitorPOV);
+
+//Do we need to load it as a scene?
 SceneLoader.Append(
   "./public/assets/models/",
   "office.glb",
@@ -94,35 +113,13 @@ SceneLoader.Append(
   function () {}
 );
 
-// Do we need a function that does this?
-// Should we add every param?
-// Also, do we need a queue for this?
-// Should we have a config with known poses(both position and target) based on clicked item?
-
 const animateToHome = function () {
-  cameraManager.animateCamera(defaultCameraPosition, new Vector3(0, 0, 0));
+  targetManager.setTarget("home");
 };
 
-const animateToMonitor = function () {
-  console.log("asd");
-  const cameraPosition = new Vector3(
-    -0.6273243739201747,
-    1.5740085977648293,
-    0.5156315816511976
-  );
-  const cameraTarget = new Vector3(
-    1.1691228052256966,
-    0.3696672344653039,
-    -0.37055848692617843
-  );
-  cameraManager.animateCamera(cameraPosition, cameraTarget);
-};
 testButton.setOnClick(animateToHome);
 
-var highlightLayer = new HighlightLayer("highlightLayer", scene);
-
 // All this will be done in the targetableManager
-const whitelist = ["MonitorScreen_primitive1", "MonitorScreen_primitive0"];
 scene.onPointerObservable.add((pointerInfo) => {
   switch (pointerInfo.type) {
     case PointerEventTypes.POINTERMOVE:
@@ -131,8 +128,8 @@ scene.onPointerObservable.add((pointerInfo) => {
     case PointerEventTypes.POINTERPICK:
       const pickedMesh = pointerInfo.pickInfo.pickedMesh;
 
-      // This should only happen for whitelisted elements
-      if (whitelist.includes(pickedMesh.name)) {
+      // This should only happen for meshes with povs in targets
+      if (pickedMesh.name in targetManager.targets) {
         const objectCamera = new Vector3();
         objectCamera.copyFrom(pickedMesh.position);
         debugElement.innerText = `pickedMesh position ${
@@ -148,19 +145,14 @@ scene.onPointerObservable.add((pointerInfo) => {
         // checks if the mesh is already in the highlight layer, if it is
         // it removes the highlight otherwise, it sets the highlight
         infoElement.setContent(pickedMesh.name);
+        targetManager.setTarget(pickedMesh.name);
         if (pickedMesh.parent && pickedMesh.parent.metadata != null) {
           pickedMesh.parent.getChildMeshes().forEach((mesh) => {
             if (highlightLayer.hasMesh(mesh)) {
               highlightLayer.removeMesh(mesh);
-              animateToHome();
+              // animateToHome();
             } else {
               highlightLayer.addMesh(mesh, Color3.White());
-              if (
-                pickedMesh.name === "MonitorScreen_primitive1" ||
-                pickedMesh.name === "MonitorScreen_primitive0"
-              ) {
-                animateToMonitor();
-              }
             }
           });
         } else {
@@ -181,4 +173,5 @@ engine.runRenderLoop(() => {
   // or any update for any class we want to call on every frame,
   // Maybe a targetable update?
   scene.render();
+  cameraManager.update();
 });

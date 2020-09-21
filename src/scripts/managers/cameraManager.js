@@ -9,23 +9,16 @@ export default class CameraManager {
     this.activeCamera = camera;
     this.cameras = [camera];
     this.queue = [];
+    this.animatingTarget = false;
+    this.animatingCamera = false;
   }
 
-  animEnded(anim) {
-    console.log("animation ended", anim);
-    //I don't think we need this
-    camera.attachControl(canvas, true);
-    for (anim of scene.animations) {
-      anim.stop();
-    }
+  targAnimEnded() {
+    this.animatingTarget = false;
   }
 
-  targAnimEnded(test) {
-    console.log("targAnimEnded:", test);
-  }
-
-  camPosAnimEnded(test) {
-    console.log("camPosAnimEnded:", test);
+  camPosAnimEnded() {
+    this.animatingCamera = false;
   }
 
   animateCameraTargetToPosition(speed, frameCount, newPos) {
@@ -45,6 +38,9 @@ export default class CameraManager {
       this.targAnimEnded
     );
     aable1.disposeOnEnd = true;
+    aable1.waitAsync().finally(() => {
+      this.animatingTarget = false;
+    });
   }
 
   animateCameraToPosition(speed, frameCount, position) {
@@ -63,19 +59,50 @@ export default class CameraManager {
       this.camPosAnimEnded
     );
     aable2.disposeOnEnd = true;
+    aable2.waitAsync().finally(() => {
+      this.animatingCamera = false;
+    });
   }
 
-  animateCamera(cameraPosition, cameraTarget) {
-    //this should push to some kind of queue
-    this.animateCameraToPosition(
-      ANIMATIONSPEED,
-      ANIMATIONFRAMES,
-      cameraPosition
+  animateCamera(
+    cameraPosition,
+    cameraSpeed,
+    cameraFrames,
+    tgtPosition,
+    tgtSpeed,
+    tgtFrames
+  ) {
+    this.animateCameraToPosition(cameraSpeed, cameraFrames, cameraPosition);
+    this.animateCameraTargetToPosition(tgtSpeed, tgtFrames, tgtPosition);
+  }
+
+  animateToTarget(pov) {
+    this.queue.push(pov);
+  }
+
+  moveQueue() {
+    const pov = this.queue.shift();
+    console.log(pov);
+    this.animateCamera(
+      pov.camera.position,
+      pov.camera.speed,
+      pov.camera.frames,
+      pov.target.position,
+      pov.target.speed,
+      pov.target.frames
     );
-    this.animateCameraTargetToPosition(
-      ANIMATIONSPEED,
-      ANIMATIONFRAMES,
-      cameraTarget
-    );
+  }
+
+  update() {
+    // console.log(this.queue);
+    // console.log(this.animatingTarget);
+    // console.log(this.animatingCamera);
+    if (this.queue.length != 0) {
+      if (!this.animatingTarget && !this.animatingCamera) {
+        this.moveQueue();
+        this.animatingCamera = true;
+        this.animatingTarget = true;
+      }
+    }
   }
 }
